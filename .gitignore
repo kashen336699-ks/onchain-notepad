@@ -1,0 +1,15 @@
+# 依赖与产物
+node_modules/
+dist/
+
+# 环境变量：绝不提交
+.env
+.env.local
+*.local
+
+# Hardhat 编译产物
+artifacts/
+cache/
+
+# 系统文件
+.DS_Store
