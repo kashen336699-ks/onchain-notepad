@@ -1,6 +1,6 @@
 # 链上记事本 DApp · 作业进度
 
-> 最后更新：2026-08-08
+> 最后更新：2026-08-08（暂停：用户去吃早饭，Cloudflare Pages 配到一半）
 > 对照手册：`class9/链上记事本-开发手册.html`
 
 ## 总进度：01–06 完成（链上全部 + 前端脚手架）；下一步阶段 07 接钱包
@@ -24,7 +24,16 @@
 | 07 | wagmi + RainbowKit | ✅ 2026-08-08 连上 MetaMask，显示地址 + 0.049 ETH，中文暗色弹窗正常 |
 | 08 | 读合约（笔记列表） | ✅ 2026-08-08 显示「还没有笔记」= 读到空数组，成功 |
 | 09 | 写合约（新增笔记） | ✅ 2026-08-08 闭环打通，链上 `noteCount`=1（公共 RPC 独立核验） |
-| 10 | 收尾打磨 | 🔵 UI（赛博风）+ 网络守卫 + 删除功能 + README + git 初始化都已完成；**只剩部署** |
+| 10 | 收尾打磨 | ✅ UI（赛博风）+ 网络守卫 + 删除功能 + README + GitHub 仓库 + 部署上线，全部完成 |
+
+## 交付物（2026-08-08 全部就绪）
+
+- **在线站点**：<https://kashen336699-ks.github.io/onchain-notepad/>（GitHub Pages，Actions 自动部署）
+- **代码仓库**：<https://github.com/kashen336699-ks/onchain-notepad>（Public）
+- **合约**：<https://sepolia.etherscan.io/address/0x29Ddd31020283160cF31b2B9ff207b9b4cB7025F#code>（Exact Match）
+- 部署机制：push 到 `main` → Actions 跑 `web/` 的 `npm ci && npm run build` → 发布 `web/dist`
+- `VITE_WC_PROJECT_ID` 存在仓库 Actions secret 里；`vite.config.ts` 的 `base`
+  用 `process.env.GITHUB_ACTIONS` 判断，CI 里是 `/onchain-notepad/`，本地仍是 `/`
 
 ## 作业 6 项要求的完成情况
 
@@ -100,14 +109,40 @@ optimizer 开着时 source map 会飘——**可靠信号是 reason string**，�
   另有备份 `class9/notepad.ts.bak`，脚手架跑完确认无误后可删
 - 脚手架文件已落盘：`package.json` / `vite.config.ts` / `eslint.config.js` / `index.html` / `src/` / `tsconfig*.json`
 
-### 下次继续：阶段 07
+### 下次继续：只剩 3 件事（2026-08-08 暂停于此）
 
-1. 装依赖：`npm i wagmi viem @tanstack/react-query @rainbow-me/rainbowkit`（境外源，预计慢）
-2. 建 `web/.env.local`，写 `VITE_WC_PROJECT_ID=<Reown ID>` —— **由用户本人填**
-3. 新建 `web/src/wagmi.ts`，改写 `main.tsx`（Provider 三层）和 `App.tsx`（ConnectButton）
-4. 开发服务器占住终端窗口，**别 Ctrl+C**，要敲命令用 `Cmd+T` 开新标签
-5. `tsconfig.app.json` 里已有 `"types": ["vite/client"]`，所以 `import.meta.env` 有类型，
-   不需要额外建 `vite-env.d.ts`（这版脚手架没生成它）
+**作业本身已经可以交了**，下面都是加分项／收尾。
+
+**① Cloudflare Pages 备用域名（进行到一半，用户去吃早饭了）**
+
+为什么要加：GitHub Pages 的链接在国内可能打不开。实测他这台机器 DNS 解析
+`kashen336699-ks.github.io` 得到 `198.18.0.19`（Clash/TUN 的 fake-ip 段），
+说明**全程走代理**，直连能否访问未知。同学用 `pages.dev` 大概率就是这个原因。
+
+走 Dashboard 网页版，**不要再试 wrangler CLI**：`wrangler@4.120` 要求 Node ≥22，
+他是 v20.19.6，`npx wrangler login` 下了半天还没跑起来，已放弃并 kill 掉。
+
+他的 Cloudflare 账号 `Kashen336699@g...`，已登录，account id `48b1a6f3578ef8e8d9d3b0d8c1e4fc6c`，
+名下有域名 `sfaigc.com`。给他的步骤：
+Compute → Workers & Pages → Create → Pages → Connect to Git → 授权 GitHub App
+（选 Only select repositories，只勾 onchain-notepad）→ Begin setup，构建配置：
+
+| 字段 | 值 |
+|---|---|
+| Framework preset | Vite |
+| Build command | `npm run build` |
+| Build output directory | `dist` |
+| **Root directory** | **`web`** ← 漏了必挂，仓库根目录没有 package.json |
+| 环境变量 | `VITE_WC_PROJECT_ID` = 那串 32 位 ID |
+
+**代码不用改**：`vite.config.ts` 的 base 是 `process.env.GITHUB_ACTIONS ? '/onchain-notepad/' : '/'`，
+Cloudflare 上没有 `GITHUB_ACTIONS` 变量 → 自动走根路径，正好匹配 `pages.dev`。两边可并存。
+
+部署完拿到 `xxx.pages.dev` 后要做：验证资源路径 + 钱包连接、更新 README 和本文件。
+
+**② 录屏**（只有他能做）—— 含 MetaMask 弹窗和交易确认的完整操作。
+
+**③ Etherscan 验证页截图**（只有他能做）—— 那个绿色 ✓ 和源码页。
 
 ### 阶段 07 讲解要点（已在等待期间讲过，接手时可复用）
 
