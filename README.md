@@ -5,6 +5,11 @@
 
 Web3 第一课作业。
 
+**🔗 在线体验：<https://kashen336699-ks.github.io/onchain-notepad/>**
+
+（需要浏览器装有 MetaMask，并把网络切到 Sepolia 测试网。测试币可从
+<https://sepoliafaucet.com> 等水龙头领取。）
+
 ---
 
 ## 合约
