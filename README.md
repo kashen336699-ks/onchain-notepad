@@ -5,10 +5,17 @@
 
 Web3 第一课作业。
 
-**🔗 在线体验：<https://kashen336699-ks.github.io/onchain-notepad/>**
+**🔗 在线体验（两个地址内容相同，任选其一）**
+
+- <https://onchain-notepad.pages.dev/> — Cloudflare Pages
+- <https://kashen336699-ks.github.io/onchain-notepad/> — GitHub Pages
 
 （需要浏览器装有 MetaMask，并把网络切到 Sepolia 测试网。测试币可从
 <https://sepoliafaucet.com> 等水龙头领取。）
+
+> 两个域名由同一份代码构建，资源路径不同：GitHub Pages 部署在子路径下，
+> Cloudflare Pages 在根路径。`vite.config.ts` 用 `process.env.GITHUB_ACTIONS`
+> 判断当前构建环境，自动切换 `base`，无需维护两份配置。
 
 ---
 
@@ -48,8 +55,23 @@ Web3 第一课作业。
 
 **前端**：Vite 8 · React 19 · TypeScript 6 · wagmi 2 · viem 2 · RainbowKit 2 · TanStack Query 5
 
+**部署**：GitHub Actions → GitHub Pages ／ Cloudflare Pages（Root directory 设为 `web`）
+
 > ⚠️ wagmi 必须锁在 **2.x**。RainbowKit 2.2.11 的 peerDependency 是 `wagmi@^2.9.0`，
 > 直接 `npm i wagmi` 会装到 3.x，npm 只 warn 不拦，但运行时会因 API 变更而崩。
+
+### 前端读链走哪个 RPC
+
+`web/src/wagmi.ts` 里的 `getDefaultConfig` **没有传 `transports`**，所以 viem 用的是
+Sepolia 的内置默认端点（`11155111.rpc.thirdweb.com`）。`contract/.env` 里那个
+Alchemy URL **只服务于 Hardhat 的部署和验证**，前端一行都没用到。
+
+想让前端也走 Alchemy 的话要显式配置：
+
+```ts
+import { http } from 'wagmi';
+transports: { [sepolia.id]: http(import.meta.env.VITE_ALCHEMY_URL) }
+```
 
 ---
 

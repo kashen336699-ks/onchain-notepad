@@ -1,9 +1,9 @@
 # 链上记事本 DApp · 作业进度
 
-> 最后更新：2026-08-08（暂停：用户去吃早饭，Cloudflare Pages 配到一半）
+> 最后更新：2026-08-09（Cloudflare Pages 已上线，架构图已产出）
 > 对照手册：`class9/链上记事本-开发手册.html`
 
-## 总进度：01–06 完成（链上全部 + 前端脚手架）；下一步阶段 07 接钱包
+## 总进度：00–10 全部完成 ✅ 作业可交。只剩录屏 + Etherscan 截图（都只能本人做）
 
 **当前配合方式（2026-08-05 用户明确要求）**：严格跟手册一阶段一停，我讲解 + 给代码块，
 **由用户自己敲、自己跑命令**，我只盯错和验收。不要提前替他把后面的阶段做完。
@@ -28,8 +28,11 @@
 
 ## 交付物（2026-08-08 全部就绪）
 
-- **在线站点**：<https://kashen336699-ks.github.io/onchain-notepad/>（GitHub Pages，Actions 自动部署）
+- **在线站点**：<https://onchain-notepad.pages.dev/>（Cloudflare Pages，2026-08-09 上线）
+  备用 <https://kashen336699-ks.github.io/onchain-notepad/>（GitHub Pages，Actions 自动部署）
 - **代码仓库**：<https://github.com/kashen336699-ks/onchain-notepad>（Public）
+- **架构图**：`class9/架构图.html`（单文件离线可看，含分层架构 / 读写双路径 /
+  合约数据结构 / 部署管线 4 张图 + 事实核对表，配色跟应用同一套赛博风）
 - **合约**：<https://sepolia.etherscan.io/address/0x29Ddd31020283160cF31b2B9ff207b9b4cB7025F#code>（Exact Match）
 - 部署机制：push 到 `main` → Actions 跑 `web/` 的 `npm ci && npm run build` → 发布 `web/dist`
 - `VITE_WC_PROJECT_ID` 存在仓库 Actions secret 里；`vite.config.ts` 的 `base`
@@ -39,12 +42,12 @@
 
 | # | 要求 | 状态 |
 |---|---|---|
-| 1 | Vite + React 前端 | ✅ 阶段 06 完成 |
-| 2 | 前端使用 wagmi | ⬜ 阶段 07–09 |
+| 1 | Vite + React 前端 | ✅ 阶段 06 |
+| 2 | 前端使用 wagmi | ✅ 阶段 07–09，读写都走 wagmi hooks |
 | 3 | 合约部署 Sepolia + 水龙头 + Hardhat | ✅ |
-| 4 | 测试链合约开源验证 | ✅ |
-| 5 | 用 RainbowKit | ⬜ 阶段 07 |
-| 6 | 完成前后端交互逻辑 | ⬜ 阶段 08–09 |
+| 4 | 测试链合约开源验证 | ✅ Exact Match |
+| 5 | 用 RainbowKit | ✅ 阶段 07，中文暗色主题 |
+| 6 | 完成前后端交互逻辑 | ✅ 阶段 08–09，写入→等回执→refetch 闭环 |
 
 ## 关键地址
 
@@ -109,11 +112,37 @@ optimizer 开着时 source map 会飘——**可靠信号是 reason string**，�
   另有备份 `class9/notepad.ts.bak`，脚手架跑完确认无误后可删
 - 脚手架文件已落盘：`package.json` / `vite.config.ts` / `eslint.config.js` / `index.html` / `src/` / `tsconfig*.json`
 
-### 下次继续：只剩 3 件事（2026-08-08 暂停于此）
+### 收尾进度（2026-08-09 更新）
 
 **作业本身已经可以交了**，下面都是加分项／收尾。
 
-**① Cloudflare Pages 备用域名（进行到一半，用户去吃早饭了）**
+**① Cloudflare Pages 备用域名 —— ✅ 2026-08-09 完成**
+
+线上地址 <https://onchain-notepad.pages.dev/>，连的是 GitHub 仓库，push 到 `main` 自动构建。
+实测：HTTP 200；资源路径是 `/assets/...` 根路径（`base` 判断按预期生效）；
+Reown Project ID 已打进主包，说明环境变量构建时读到了。
+
+配置要点（当时踩的）：
+
+| 字段 | 值 |
+|---|---|
+| Framework preset | React (Vite) |
+| Build command | `npm run build` |
+| Build output directory | `dist`（相对 Root directory 解析，实际是 `web/dist`） |
+| **Root directory** | **`web`** ← 折叠在 "Root directory (advanced)" 里，默认空，不填必挂 |
+| 环境变量 | `VITE_WC_PROJECT_ID` |
+
+- **Pages 入口被降级了**：`Create application` 页面整个是 "Create a Worker"，
+  Pages 入口只剩底部一行小字 `Looking to deploy Pages? Get started`。走 Workers 那栏的
+  "Import a repository" 会建成 Worker，配置字段对不上。
+- GitHub App 授权选 **Only select repositories** 只勾 `onchain-notepad`——
+  Cloudflare 要的是 administration/code/deployments 的**写**权限，别给 All repositories。
+- 授权时会触发 GitHub sudo mode 二次验证（手机 App 或邮箱验证码），正常流程不是报错。
+- 刚部署完访问可能吃到 **522**，是新域名还没在全球节点铺开，等一两分钟即可，不用重部署。
+- 全程免费：Pages 免费版无限请求/带宽、500 次构建/月，不绑卡就不会产生账单。
+  Dashboard 上那个 `Requests today 0/100,000` 是 **Workers** 的额度，不是 Pages 的。
+
+**（历史记录）当时的配置步骤**
 
 为什么要加：GitHub Pages 的链接在国内可能打不开。实测他这台机器 DNS 解析
 `kashen336699-ks.github.io` 得到 `198.18.0.19`（Clash/TUN 的 fake-ip 段），
@@ -149,8 +178,14 @@ Cloudflare 上没有 `GITHUB_ACTIONS` 变量 → 自动走根路径，正好匹�
 - **三层积木**：RainbowKit（连钱包弹窗 UI）→ wagmi（React hooks 读写合约）→ viem（编解码）
   → Connector（injected 插件 / WalletConnect 扫码，后者才要 Reown ID）→ Transport（Alchemy RPC）
   三者是叠加关系不是平行选项；三个都不装也能做 DApp，只是要多写代码
-- **读 vs 写**：`useReadContract` 走 Alchemy、免费、不用连钱包不用签名；
-  `useWriteContract` 必须钱包签名、走钱包自己的 RPC、花 gas、要处理等待/失败/用户取消
+- **读 vs 写**：`useReadContract` 免费、不签名；`useWriteContract` 必须钱包签名、
+  走钱包自己的 RPC、花 gas、要处理等待/失败/用户取消
+  > ⚠️ **2026-08-09 更正**：这里原来写的是「`useReadContract` 走 Alchemy」，对本项目不成立。
+  > `web/src/wagmi.ts` 的 `getDefaultConfig` **没传 `transports`**，所以 viem 用的是
+  > Sepolia 内置默认端点 `11155111.rpc.thirdweb.com`。`contract/.env` 里的 Alchemy URL
+  > **只给 Hardhat 部署/验证用**，前端一行没用到。要走 Alchemy 得显式写
+  > `transports: { [sepolia.id]: http(import.meta.env.VITE_ALCHEMY_URL) }`。
+  > 另外 `useWaitForTransactionReceipt` 轮询回执走的也是这个公共 RPC，不是 MetaMask。
 - **Provider 必须套三层且顺序不能错**：`WagmiProvider` > `QueryClientProvider` > `RainbowKitProvider`
   （wagmi 底层用 TanStack Query 做缓存；RainbowKit 要读 wagmi 的连接状态）
 - **`VITE_` 前缀 = 公开发布**：Vite 只把 `VITE_` 开头的变量打进前端，而打进去的东西 F12 就能看到。
